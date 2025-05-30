@@ -1,13 +1,13 @@
 from django.shortcuts import render
+from rest_framework import viewsets, permissions, filters, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Avg, Max, Min, Count
 
-# Create your views here.
-from rest_framework import viewsets, permissions, filters
 from .models import Grade, GradingScale
 from .serializers import GradeSerializer, GradingScaleSerializer
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework import status
 
 class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.select_related(
@@ -36,6 +36,7 @@ class GradeViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
 class GradingScaleViewSet(viewsets.ModelViewSet):
     queryset = GradingScale.objects.all()
     serializer_class = GradingScaleSerializer
@@ -44,3 +45,40 @@ class GradingScaleViewSet(viewsets.ModelViewSet):
     search_fields = ['grade', 'description']
     ordering_fields = ['min_score', 'max_score', 'grade']
     ordering = ['min_score']
+
+
+class GradeAnalyticsView(APIView):
+    """
+    Basic analytics on grade data across the system.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        data = {
+            "average_score": Grade.objects.aggregate(avg=Avg('score'))['avg'],
+            "max_score": Grade.objects.aggregate(max=Max('score'))['max'],
+            "min_score": Grade.objects.aggregate(min=Min('score'))['min'],
+            "grades_count": Grade.objects.count(),
+            "grades_per_subject": Grade.objects.values('subject__name').annotate(total=Count('id')),
+            "grades_per_teacher": Grade.objects.values('teacher__email').annotate(total=Count('id')),
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class GradeSummaryReportView(APIView):
+    """
+    Summary report: average grade per student and per subject.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        summary = {
+            "average_per_student": Grade.objects.values('student__id', 'student__user__first_name', 'student__user__last_name')
+                .annotate(average_score=Avg('score'))
+                .order_by('-average_score'),
+
+            "average_per_subject": Grade.objects.values('subject__id', 'subject__name')
+                .annotate(average_score=Avg('score'))
+                .order_by('-average_score'),
+        }
+        return Response(summary, status=status.HTTP_200_OK)

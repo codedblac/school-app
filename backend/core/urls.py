@@ -29,7 +29,7 @@ urlpatterns = [
     path('api/events/', include('events.urls')),
     path('api/library/', include('library.urls')),
     path('api/medical/', include('medical.urls')),
-    path('api/notifications/', include('notification.urls')),
+    path('api/notifications/', include('notifications.urls')),
     path('api/portal/', include('portal.urls')),
     path('api/reports/', include('reports.urls')),
     path('api/finance/', include('finance.urls')),

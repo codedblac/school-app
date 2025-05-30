@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import SubjectCategory, Subject, ClassSubject
+from teachers.models import Teacher
+
 
 
 class SubjectCategorySerializer(serializers.ModelSerializer):

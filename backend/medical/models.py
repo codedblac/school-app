@@ -1,7 +1,4 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from django.conf import settings
 from students.models import Student
 
@@ -31,12 +28,22 @@ class Doctor(models.Model):
 
 class MedicalRecord(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='medical_records')
+    doctor = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True, blank=True)
     condition = models.ForeignKey(MedicalCondition, on_delete=models.SET_NULL, null=True, blank=True)
     diagnosed_on = models.DateField(null=True, blank=True)
+
+    # 🆕 Fields added for admin compatibility
+    incident_date = models.DateField(null=True, blank=True)
+    date_reported = models.DateField(auto_now_add=True)
+    is_resolved = models.BooleanField(default=False)
+
     notes = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.student} - {self.condition}"
+
+    class Meta:
+        ordering = ['-date_reported']
 
 class MedicationLog(models.Model):
     record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE, related_name='medications')

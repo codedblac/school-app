@@ -12,7 +12,14 @@ class ClassRoomAdmin(admin.ModelAdmin):
 class SchoolClassAdmin(admin.ModelAdmin):
     list_display = ('name', 'stream', 'academic_year', 'class_teacher', 'is_cbc', 'classroom')
     list_filter = ('academic_year', 'is_cbc')
-    search_fields = ('name', 'stream', 'class_teacher__user__first_name', 'class_teacher__user__last_name')
+    search_fields = (
+        'name',
+        'stream',
+        'class_teacher__user__first_name',
+        'class_teacher__user__last_name',
+        'academic_year__name',
+        'classroom__name',
+    )
     autocomplete_fields = ('academic_year', 'class_teacher', 'classroom')
 
 
@@ -20,6 +27,12 @@ class SchoolClassAdmin(admin.ModelAdmin):
 class ClassStudentAdmin(admin.ModelAdmin):
     list_display = ('student', 'school_class', 'date_joined', 'active')
     list_filter = ('active', 'school_class')
-    search_fields = ('student__user__first_name', 'student__user__last_name', 'school_class__name')
+    search_fields = (
+        'student__user__first_name',
+        'student__user__last_name',
+        'school_class__name',
+    )
     autocomplete_fields = ('student', 'school_class')
     readonly_fields = ('date_joined',)
+
+

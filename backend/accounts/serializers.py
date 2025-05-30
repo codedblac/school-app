@@ -9,7 +9,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'first_name', 'last_name', 'role', 'is_active')
-        
+
+# Alias for general-purpose usage
 CustomUserSerializer = UserSerializer
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -28,3 +29,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             role=validated_data['role'],
         )
         return user
+
+class UserSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'email')

@@ -8,6 +8,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import LessonPeriod, TimetableEntry
 from .serializers import LessonPeriodSerializer, TimetableEntrySerializer
 from .permissions import IsSchoolStaffOrReadOnly
+from .permissions import IsTeacherOrAdmin
+
 
 class LessonPeriodViewSet(viewsets.ModelViewSet):
     queryset = LessonPeriod.objects.all().order_by('start_time')

@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import DisciplineCategory, DisciplinaryAction, DisciplineRecord
 
-
 class DisciplineCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = DisciplineCategory
@@ -21,12 +20,7 @@ class DisciplineRecordSerializer(serializers.ModelSerializer):
     action_taken = DisciplinaryActionSerializer(read_only=True)
     reported_by = serializers.StringRelatedField(read_only=True)
 
-    # Write-only PK fields
-    student_id = serializers.PrimaryKeyRelatedField(
-        queryset=None,  # will be set dynamically in __init__
-        source='student',
-        write_only=True
-    )
+    # Write-only PK fields for relationships
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=DisciplineCategory.objects.all(),
         source='category',
@@ -43,27 +37,25 @@ class DisciplineRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = DisciplineRecord
         fields = [
-            'id',
-            'student', 'student_id',
-            'category', 'category_id',
-            'action_taken', 'action_taken_id',
-            'reported_by',
-            'incident_date', 'description',
-            'is_resolved', 'resolution_notes',
-            'date_reported', 'timestamp'
+            'id', 'student', 'category', 'action_taken', 'reported_by',
+            'student_id', 'category_id', 'action_taken_id',
+            'incident_date', 'description', 'is_resolved',
+            'resolution_notes', 'date_reported', 'timestamp',
         ]
-        read_only_fields = [
-            'student', 'category', 'action_taken', 'reported_by',
-            'date_reported', 'timestamp'
-        ]
+        read_only_fields = ['student', 'category', 'action_taken', 'reported_by', 'date_reported', 'timestamp']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set Student queryset dynamically to avoid circular imports
+        # Avoid circular import by importing here
         from students.models import Student
-        self.fields['student_id'].queryset = Student.objects.all()
+        self.fields['student_id'] = serializers.PrimaryKeyRelatedField(
+            queryset=Student.objects.all(),
+            source='student',
+            write_only=True
+        )
 
     def create(self, validated_data):
+        # Automatically assign the reporting user
         request = self.context.get('request')
         if request and hasattr(request, 'user'):
             validated_data['reported_by'] = request.user

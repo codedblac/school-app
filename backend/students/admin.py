@@ -29,3 +29,5 @@ class StudentAdmin(admin.ModelAdmin):
     ordering = ('-enrolled_date',)
     readonly_fields = ('created_at', 'updated_at')
     date_hierarchy = 'enrolled_date'
+
+    autocomplete_fields = ('user',)  
