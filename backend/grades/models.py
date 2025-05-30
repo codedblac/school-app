@@ -1,7 +1,8 @@
 from django.db import models
 from django.conf import settings
 from students.models import Student
-from academics.models import Subject, Term  # Change here from AcademicTerm to Term
+from academics.models import Subject, AcademicTerm
+
 
 class GradingScale(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -19,7 +20,7 @@ class GradingScale(models.Model):
 class Grade(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='grades')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    term = models.ForeignKey(Term, on_delete=models.CASCADE)  # Use Term here
+    term = models.ForeignKey(AcademicTerm, on_delete=models.CASCADE)  # Use Term here
     score = models.DecimalField(max_digits=6, decimal_places=2)
     grade_scale = models.ForeignKey(GradingScale, on_delete=models.SET_NULL, null=True, blank=True)
     teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)

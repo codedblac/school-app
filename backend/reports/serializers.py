@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Report, ReportSubjectEntry
-from students.serializers import StudentSerializer  # assuming you have a student serializer
+from students.models import Student  # ✅ Import the model directly
 
 class ReportSubjectEntrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,7 +9,9 @@ class ReportSubjectEntrySerializer(serializers.ModelSerializer):
 
 class ReportSerializer(serializers.ModelSerializer):
     subject_entries = ReportSubjectEntrySerializer(many=True, required=False)
-    student = serializers.PrimaryKeyRelatedField(queryset=Report.objects.none())  # To be updated or you can use StudentSerializer(read_only=True)
+    student = serializers.PrimaryKeyRelatedField(
+        queryset=Student.objects.all()  # ✅ Provide valid queryset
+    )
 
     class Meta:
         model = Report
@@ -35,8 +37,6 @@ class ReportSerializer(serializers.ModelSerializer):
         instance.attendance_percentage = validated_data.get('attendance_percentage', instance.attendance_percentage)
         instance.save()
 
-        # Update or create subject entries
-        # Simple approach: clear and recreate all entries (or implement smarter diffing)
         instance.subject_entries.all().delete()
         for entry_data in subject_entries_data:
             ReportSubjectEntry.objects.create(report=instance, **entry_data)

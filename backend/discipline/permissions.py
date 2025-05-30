@@ -1,26 +1,29 @@
 from rest_framework import permissions
 
+
 class IsAdminOrReadOnly(permissions.BasePermission):
     """
-    Allow full access to admins, read-only for others.
+    Allows full access to admin users.
+    Read-only access is allowed for unauthenticated or non-admin users.
     """
 
     def has_permission(self, request, view):
-        # Safe methods (GET, HEAD, OPTIONS) allowed for everyone
+        # Allow read-only access for all users
         if request.method in permissions.SAFE_METHODS:
             return True
-        # Write permissions only for admin users
+        # Allow write access only for admin users
         return request.user and request.user.is_staff
+
 
 class IsReporterOrAdmin(permissions.BasePermission):
     """
-    Allow the reporter of a discipline record or an admin to edit/delete.
-    Others can only read.
+    Custom permission to only allow the reporter of a discipline record
+    or admin users to edit or delete it.
     """
 
     def has_object_permission(self, request, view, obj):
-        # Read permissions allowed for everyone
+        # Read-only permissions allowed for everyone
         if request.method in permissions.SAFE_METHODS:
             return True
-        # Write permissions for the reporter or admin
-        return obj.reported_by == request.user or request.user.is_staff
+        # Write permissions only to the reporter or admin
+        return request.user and (obj.reported_by == request.user or request.user.is_staff)

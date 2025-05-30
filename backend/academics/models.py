@@ -21,7 +21,7 @@ class AcademicYear(models.Model):
     def __str__(self):
         return self.name
 
-class Term(models.Model):
+class AcademicTerm(models.Model):
     academic_year = models.ForeignKey('AcademicYear', on_delete=models.CASCADE)
     name = models.CharField(max_length=20)
     start_date = models.DateField()

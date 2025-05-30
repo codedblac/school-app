@@ -1,10 +1,5 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from django.conf import settings
 
 class AuditLog(models.Model):
     ACTION_CHOICES = [
@@ -16,12 +11,12 @@ class AuditLog(models.Model):
         ('other', 'Other'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
-    model_name = models.CharField(max_length=100)  # Model on which action was performed
-    object_id = models.CharField(max_length=255, null=True, blank=True)  # ID of object
+    model_name = models.CharField(max_length=100)
+    object_id = models.CharField(max_length=255, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    description = models.TextField(blank=True, null=True)  # Optional detailed description
+    description = models.TextField(blank=True, null=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
 
     class Meta:

@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 from django.db import models
 from students.models import Student
-from classes.models import AcademicTerm
+from academics.models import AcademicTerm
 from teachers.models import Teacher
 
 class Report(models.Model):

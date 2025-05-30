@@ -1,19 +1,26 @@
 from rest_framework import serializers
 from .models import Student
-from accounts.serializers import CustomUserSerializer
-from classes.models import Class, Stream  # Adjust as per your app structure
-from reports.models import Report  # For latest report if needed
-from reports.serializers import ReportSerializer
+from accounts.serializers import UserSerializer
+from classes.models import SchoolClass
+from reports.models import Report
+
 
 class StudentSerializer(serializers.ModelSerializer):
-    user = CustomUserSerializer()
+    user = UserSerializer()
     parents = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=CustomUserSerializer.Meta.model.objects.filter(role='parent'), required=False
+        many=True,
+        queryset=UserSerializer.Meta.model.objects.filter(role='parent'),
+        required=False
     )
-    current_class = serializers.PrimaryKeyRelatedField(queryset=Class.objects.all())
-    stream = serializers.PrimaryKeyRelatedField(queryset=Stream.objects.all(), allow_null=True, required=False)
+    current_class = serializers.PrimaryKeyRelatedField(
+        queryset=SchoolClass.objects.all()
+    )
+    stream = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True
+    )
 
-    # Read-only fields
     attendance_percentage = serializers.FloatField(read_only=True)
     latest_report = serializers.SerializerMethodField()
 
@@ -22,13 +29,13 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'admission_number', 'current_class', 'stream',
             'parents', 'attendance_percentage', 'latest_report',
-            # add other fields you have in model here
         ]
         read_only_fields = ['attendance_percentage', 'latest_report']
 
     def get_latest_report(self, obj):
         report = Report.objects.filter(student=obj).order_by('-created_at').first()
         if report:
+            from reports.serializers import ReportSerializer  # Lazy import here
             return ReportSerializer(report).data
         return None
 
@@ -36,15 +43,13 @@ class StudentSerializer(serializers.ModelSerializer):
         user_data = validated_data.pop('user')
         parents_data = validated_data.pop('parents', [])
 
-        # Create user
-        user = CustomUserSerializer.create(CustomUserSerializer(), validated_data=user_data)
+        user_serializer = UserSerializer(data=user_data)
+        user_serializer.is_valid(raise_exception=True)
+        user = user_serializer.save()
 
-        # Create student
         student = Student.objects.create(user=user, **validated_data)
 
-        # Link parents
         student.parents.set(parents_data)
-
         return student
 
     def update(self, instance, validated_data):
@@ -52,8 +57,10 @@ class StudentSerializer(serializers.ModelSerializer):
         parents_data = validated_data.pop('parents', None)
 
         if user_data:
-            CustomUserSerializer.update(CustomUserSerializer(), instance.user, user_data)
-        
+            user_serializer = UserSerializer(instance=instance.user, data=user_data, partial=True)
+            user_serializer.is_valid(raise_exception=True)
+            user_serializer.save()
+
         if parents_data is not None:
             instance.parents.set(parents_data)
 

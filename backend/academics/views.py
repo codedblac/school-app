@@ -3,9 +3,9 @@ from django.shortcuts import render
 # academics/views.py
 
 from rest_framework import viewsets
-from .models import Subject, AcademicYear, Term, Syllabus, LessonPlan, Assignment, Submission
+from .models import Subject, AcademicYear, AcademicTerm, Syllabus, LessonPlan, Assignment, Submission
 from .serializers import (
-    SubjectSerializer, AcademicYearSerializer, TermSerializer,
+    SubjectSerializer, AcademicYearSerializer, AcademicTermSerializer,
     SyllabusSerializer, LessonPlanSerializer, AssignmentSerializer, SubmissionSerializer
 )
 
@@ -17,9 +17,9 @@ class AcademicYearViewSet(viewsets.ModelViewSet):
     queryset = AcademicYear.objects.all()
     serializer_class = AcademicYearSerializer
 
-class TermViewSet(viewsets.ModelViewSet):
-    queryset = Term.objects.all()
-    serializer_class = TermSerializer
+class AcademicTermViewSet(viewsets.ModelViewSet):
+    queryset = AcademicTerm.objects.all()
+    serializer_class = AcademicTermSerializer
 
 class SyllabusViewSet(viewsets.ModelViewSet):
     queryset = Syllabus.objects.all()

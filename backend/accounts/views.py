@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions
-from .models import User
 from .serializers import UserSerializer, RegisterSerializer
+
+User = get_user_model()  # Correct way to reference the custom user model
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
